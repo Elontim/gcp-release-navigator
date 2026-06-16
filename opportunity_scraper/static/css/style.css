@@ -994,3 +994,58 @@ body {
 
 /* Utilities */
 .margin-right-xs { margin-right: 4px; }
+
+/* Modal Extended Metadata Layout */
+.modal-meta-extended {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.meta-item {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.meta-item i {
+    color: var(--primary);
+}
+
+/* Modal Benefits box */
+.modal-benefits-box {
+    background: rgba(16, 185, 129, 0.04);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.light-mode .modal-benefits-box {
+    background: rgba(5, 150, 105, 0.04);
+    border: 1px solid rgba(5, 150, 105, 0.12);
+}
+
+.modal-benefits-box h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--grant-color);
+    margin-top: 0 !important;
+    margin-bottom: 0.5rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.modal-benefits-box p {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 0 !important;
+}
+

@@ -5,4 +5,7 @@ __pycache__/
 .vscode/
 .DS_Store
 *.db
+*.json
+*.csv
+
 

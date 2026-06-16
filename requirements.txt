@@ -1,3 +1,5 @@
 flask
 google-cloud-bigquery
 pytz
+beautifulsoup4
+requests

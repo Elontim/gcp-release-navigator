@@ -16,7 +16,10 @@ MOCK_SEED_OPPORTUNITIES = [
         "description": "The Hubert H. Humphrey Fellowship Program provides ten months of non-degree academic study and related professional experiences in the United States. Humphrey Fellows are selected based on their potential for leadership and their commitment to public service in either the public or the private sector.",
         "category": "Fellowship",
         "source": "Opportunity Desk",
-        "pub_date": "2026-06-15 08:30:00"
+        "pub_date": "2026-06-15 08:30:00",
+        "target_region": "Global / Worldwide",
+        "benefits": "Covers tuition fees, monthly living allowance, accident and sickness coverage, and round-trip travel.",
+        "deadline": "October 1, 2026"
     },
     {
         "title": "IETF 120 Travel Grants for Network Engineers (Fully Funded to Madrid, Spain)",
@@ -24,7 +27,10 @@ MOCK_SEED_OPPORTUNITIES = [
         "description": "The Internet Engineering Task Force (IETF) is offering travel grants to support network engineers, researchers, and developers from underrepresented regions to attend the IETF 120 meeting in Madrid, Spain. The grant covers flights, accommodation, and meeting registration.",
         "category": "Travel Grant",
         "source": "Opportunity Desk",
-        "pub_date": "2026-06-14 10:15:00"
+        "pub_date": "2026-06-14 10:15:00",
+        "target_region": "Developing Countries",
+        "benefits": "Includes complimentary meeting registration, round-trip economy flight, and private hotel accommodation.",
+        "deadline": "July 12, 2026"
     },
     {
         "title": "One Young World Summit 2026 - Fully Funded Delegate Scholarship (Munich, Germany)",
@@ -32,7 +38,10 @@ MOCK_SEED_OPPORTUNITIES = [
         "description": "One Young World is looking for young leaders from around the globe to participate in the One Young World Summit 2026 in Munich, Germany. The scholarship covers summit access, private hotel accommodation, catering, and return travel.",
         "category": "Fully Funded Conference",
         "source": "Youth Opportunities",
-        "pub_date": "2026-06-12 14:00:00"
+        "pub_date": "2026-06-12 14:00:00",
+        "target_region": "Global / Worldwide",
+        "benefits": "Access to the OYW 2026 summit, hotel accommodation, transport, and catering.",
+        "deadline": "August 30, 2026"
     },
     {
         "title": "CERN Summer Student Programme 2026 in Geneva (Fully Funded Fellowship)",
@@ -40,7 +49,10 @@ MOCK_SEED_OPPORTUNITIES = [
         "description": "The CERN Summer Student Programme offers undergraduate and graduate students in physics, computing, engineering, and mathematics a unique opportunity to join in the day-to-day work of research teams in Geneva, Switzerland. Includes allowance, travel coverage, and health insurance.",
         "category": "Fellowship",
         "source": "Youth Opportunities",
-        "pub_date": "2026-06-10 09:00:00"
+        "pub_date": "2026-06-10 09:00:00",
+        "target_region": "Global / Worldwide",
+        "benefits": "Covers a daily allowance of 92 CHF, travel allowance, and comprehensive health insurance coverage.",
+        "deadline": "January 31, 2027"
     },
     {
         "title": "ACM SIGCOMM 2026 Travel Grants for Graduate Students (Fully Funded to Athens)",
@@ -48,7 +60,10 @@ MOCK_SEED_OPPORTUNITIES = [
         "description": "ACM SIGCOMM offers travel grants to support graduate students and early-career researchers attending the SIGCOMM 2026 conference in Athens, Greece. Grants cover travel expenses, lodging, and conference registration.",
         "category": "Travel Grant",
         "source": "Youth Opportunities",
-        "pub_date": "2026-06-08 11:45:00"
+        "pub_date": "2026-06-08 11:45:00",
+        "target_region": "Global / Worldwide",
+        "benefits": "Covers economy travel costs, registration, and shared hotel accommodation.",
+        "deadline": "June 30, 2026"
     },
     {
         "title": "UN Climate Change Conference (COP 31) Youth Fellowship (Fully Funded)",
@@ -56,7 +71,10 @@ MOCK_SEED_OPPORTUNITIES = [
         "description": "The UN Climate Change Youth Fellowship program is designed to bring young climate advocates and researchers directly into international climate negotiations. The fellowship covers full travel, lodging, daily allowance, and pre-conference training workshops.",
         "category": "Fully Funded Conference",
         "source": "Opportunity Desk",
-        "pub_date": "2026-06-05 16:30:00"
+        "pub_date": "2026-06-05 16:30:00",
+        "target_region": "Global / Worldwide",
+        "benefits": "Includes travel tickets, hotel stay, daily subsistence allowance, and expert training sessions.",
+        "deadline": "September 15, 2026"
     }
 ]
 
@@ -81,13 +99,14 @@ def seed_db():
         for op in MOCK_SEED_OPPORTUNITIES:
             try:
                 cursor.execute('''
-                    INSERT INTO opportunities (title, link, description, category, source, pub_date, scraped_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (op["title"], op["link"], op["description"], op["category"], op["source"], op["pub_date"], scraped_at))
+                    INSERT INTO opportunities (title, link, description, category, source, pub_date, scraped_at, target_region, benefits, deadline)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (op["title"], op["link"], op["description"], op["category"], op["source"], op["pub_date"], scraped_at, op["target_region"], op["benefits"], op["deadline"]))
             except sqlite3.IntegrityError:
                 pass
         conn.commit()
     conn.close()
+
 
 @app.route('/')
 def index():

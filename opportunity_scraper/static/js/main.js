@@ -243,7 +243,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3 class="op-title" title="${escapeHtml(op.title)}">${escapeHtml(op.title)}</h3>
             </div>
             <div class="op-card-body">
-                <span class="type-badge">${op.category}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <span class="type-badge">${op.category}</span>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem;">
+                        <i class="fa-solid fa-hourglass-end"></i> ${escapeHtml(op.deadline || 'See details')}
+                    </span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.35rem;">
+                    <i class="fa-solid fa-map-location-dot"></i> <span>Region: <strong>${escapeHtml(op.target_region || 'Global')}</strong></span>
+                </div>
                 <p class="op-desc">${escapeHtml(cleanDesc)}</p>
             </div>
             <div class="op-card-actions">
@@ -322,6 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
         modalSource.innerHTML = `<i class="fa-solid fa-globe"></i> ${escapeHtml(op.source)}`;
         modalDate.innerHTML = `<i class="fa-regular fa-calendar"></i> Published: ${formatDate(op.pub_date)}`;
         
+        // Inject region, deadline, benefits
+        document.getElementById('modal-region').textContent = op.target_region || 'Global / Worldwide';
+        document.getElementById('modal-deadline').textContent = op.deadline || 'See details';
+        document.getElementById('modal-benefits').textContent = op.benefits || 'Funding available';
+
         // Inject rich description HTML
         modalBodyContent.innerHTML = op.description || '<p>No description provided.</p>';
         

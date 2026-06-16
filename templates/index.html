@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCP Release Navigator</title>
+    <meta name="description" content="A real-time dashboard displaying updates and release notes from Google Cloud BigQuery.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-mode">
+    <div class="glow-container">
+        <div class="glow-spot glow-1"></div>
+        <div class="glow-spot glow-2"></div>
+    </div>
+
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-cloud"></i>
+                    <i class="fa-solid fa-database overlay-db"></i>
+                </div>
+                <div>
+                    <h1 id="main-title">GCP Release Navigator</h1>
+                    <p class="subtitle">BigQuery Cloud Feed Feed-explorer</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <!-- Status Badge -->
+                <div id="status-badge" class="badge mock-badge" title="Click to view setup details">
+                    <span class="status-indicator animate-pulse"></span>
+                    <span id="status-text">Detecting status...</span>
+                    <i class="fa-solid fa-circle-info margin-left-sm"></i>
+                </div>
+                
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="btn btn-icon" aria-label="Toggle Theme" title="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <div class="main-container">
+            <!-- Data Feed Info -->
+            <section class="info-card" aria-label="Data Source Info">
+                <div class="info-icon">
+                    <i class="fa-solid fa-circle-nodes"></i>
+                </div>
+                <div class="info-content">
+                    <h3>GCP Public Dataset Feed</h3>
+                    <p>
+                        This dashboard aggregates, filters, and searches official Google Cloud Platform updates sourced directly from the public BigQuery table: 
+                        <code>bigquery-public-data.google_cloud_release_notes.release_notes</code>.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Control Panel -->
+            <section class="control-panel" aria-label="Filters and Search">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search releases, features, bug fixes..." autocomplete="off">
+                    <button id="search-clear" class="btn-clear" style="display: none;" aria-label="Clear search">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="filter-group">
+                    <div class="select-wrapper">
+                        <i class="fa-solid fa-layer-group select-icon"></i>
+                        <select id="service-filter" aria-label="Filter by Service">
+                            <option value="">All Services</option>
+                            <option value="BigQuery">BigQuery</option>
+                            <option value="Cloud Run">Cloud Run</option>
+                            <option value="Google Kubernetes Engine">GKE (Kubernetes)</option>
+                            <option value="Vertex AI">Vertex AI</option>
+                            <option value="Cloud Spanner">Cloud Spanner</option>
+                            <option value="Cloud Pub/Sub">Cloud Pub/Sub</option>
+                            <option value="Cloud Storage">Cloud Storage</option>
+                            <option value="Cloud Functions">Cloud Functions</option>
+                        </select>
+                    </div>
+
+                    <div class="select-wrapper">
+                        <i class="fa-solid fa-tags select-icon"></i>
+                        <select id="type-filter" aria-label="Filter by Update Type">
+                            <option value="">All Types</option>
+                            <option value="Feature">Feature Releases</option>
+                            <option value="Change">Product Changes</option>
+                            <option value="Performance">Performance Improvements</option>
+                            <option value="Update">General Updates</option>
+                            <option value="Preview">Preview Launches</option>
+                            <option value="Fix">Bug Fixes</option>
+                            <option value="Deprecation">Deprecations</option>
+                        </select>
+                    </div>
+
+                    <button id="refresh-btn" class="btn btn-primary" title="Refresh data">
+                        <i class="fa-solid fa-rotate refresh-spinner-icon" id="spinner-icon"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Results Metrics -->
+            <div class="results-meta">
+                <div id="results-count">Showing 0 releases</div>
+                <div id="mode-indicator" class="mode-tag">Loading...</div>
+            </div>
+
+            <!-- Feed Content -->
+            <div id="cards-container" class="cards-grid">
+                <!-- Skeleton loader generated dynamically on load -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Setup Modal -->
+    <div id="setup-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <button id="modal-close" class="modal-close-btn" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="modal-header">
+                <i class="fa-solid fa-cloud-arrow-up modal-header-icon"></i>
+                <h2 id="modal-title">Connecting to Real GCP BigQuery</h2>
+            </div>
+            
+            <div class="modal-body">
+                <p>By default, if the application doesn't detect active Google Cloud Platform (GCP) credentials, it runs in <strong>Demo Mode</strong> using mock data.</p>
+                
+                <div class="steps-container">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-text">
+                            <h4>Set up a Google Cloud Project</h4>
+                            <p>Enable the BigQuery API in the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">GCP Console</a>. You need a project with active billing or the free tier active to execute queries.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-text">
+                            <h4>Configure Authentication</h4>
+                            <p>Choose one of the following methods to authorize the app client:</p>
+                            <div class="tab-options">
+                                <div class="tab-opt active" data-target="method-adc">Application Default Credentials (Recommended)</div>
+                                <div class="tab-opt" data-target="method-sa">Service Account Key JSON</div>
+                            </div>
+                            
+                            <div class="tab-content" id="method-adc">
+                                <p>Install the <a href="https://cloud.google.com/sdk/docs/install" target="_blank" rel="noopener noreferrer">Google Cloud CLI</a> and run the following command in your terminal:</p>
+                                <pre><code>gcloud auth application-default login</code></pre>
+                                <p class="note">This is the safest method for local development, making credentials automatically available to Flask.</p>
+                            </div>
+                            
+                            <div class="tab-content" id="method-sa" style="display: none;">
+                                <p>Create a Service Account with the <strong>BigQuery User</strong> role, download its key file (JSON), and set the environment variable pointing to its path:</p>
+                                <pre><code># PowerShell (Windows)
+$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your-key.json"
+
+# CMD (Windows)
+set GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your-key.json"
+
+# Bash (Linux/macOS)
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your-key.json"</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-text">
+                            <h4>Restart the Server</h4>
+                            <p>Restart the Flask server. It will automatically detect your credentials and pull <strong>live, up-to-date</strong> release feeds directly from Google Cloud BigQuery.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="modal-ok-btn" class="btn btn-secondary">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error/Alert Banner -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <footer class="app-footer">
+        <p>© 2026 GCP Release Navigator. Powered by Python Flask, Google BigQuery & Antigravity.</p>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Opportunities Tracker</title>
+    <meta name="description" content="Dashboard tracking travel grants, fellowships, and fully funded conferences globally.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-mode">
+    <div class="glow-container">
+        <div class="glow-spot glow-blue"></div>
+        <div class="glow-spot glow-purple"></div>
+    </div>
+
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-earth-americas"></i>
+                </div>
+                <div>
+                    <h1>Global Opportunities Tracker</h1>
+                    <p class="subtitle">Extracting Travel Grants, Fellowships & Conferences</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button id="theme-toggle" class="btn btn-icon" aria-label="Toggle Theme" title="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <div class="main-container">
+            <!-- Stats Dashboard Grid -->
+            <section class="stats-grid" aria-label="Metrics Dashboard">
+                <div class="stat-card stat-fellowship">
+                    <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Fellowships</span>
+                        <h2 id="count-fellowships">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card stat-grant">
+                    <div class="stat-icon"><i class="fa-solid fa-plane-departure"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Travel Grants</span>
+                        <h2 id="count-grants">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card stat-conference">
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Conferences</span>
+                        <h2 id="count-conferences">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card stat-saved">
+                    <div class="stat-icon"><i class="fa-solid fa-bookmark"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Bookmarked</span>
+                        <h2 id="count-saved">0</h2>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search & Filters Toolbar -->
+            <section class="toolbar-section" aria-label="Search and filter options">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="search-bar" placeholder="Search opportunities by title, keyword, country..." autocomplete="off">
+                    <button id="clear-search-btn" class="btn-clear-search" style="display: none;" aria-label="Clear search">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                
+                <div class="action-filters-wrapper">
+                    <div class="tabs-container" id="category-tabs" role="tablist">
+                        <button class="tab-item active" data-category="" role="tab" aria-selected="true">All</button>
+                        <button class="tab-item" data-category="Fellowship" role="tab" aria-selected="false">Fellowships</button>
+                        <button class="tab-item" data-category="Travel Grant" role="tab" aria-selected="false">Travel Grants</button>
+                        <button class="tab-item" data-category="Fully Funded Conference" role="tab" aria-selected="false">Conferences</button>
+                        <button class="tab-item" data-category="saved" role="tab" aria-selected="false"><i class="fa-solid fa-bookmark margin-right-xs"></i> Saved</button>
+                    </div>
+
+                    <button id="scrape-trigger-btn" class="btn btn-primary" title="Trigger Opportunity Scraper">
+                        <i class="fa-solid fa-cloud-arrow-down refresh-spinner" id="btn-spinner"></i>
+                        <span>Scrape Feeds</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Results Metrics -->
+            <div class="results-header">
+                <div id="results-meta-text">Found 0 opportunities</div>
+                <div id="scraped-date-text" class="timestamp-indicator">Last updated: Never</div>
+            </div>
+
+            <!-- Opportunities Grid -->
+            <div id="opportunities-container" class="opportunities-grid">
+                <!-- Skeleton loader placeholders dynamically injected on load -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Details View Modal -->
+    <div id="details-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <button id="modal-close-btn" class="modal-close-icon" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="modal-header">
+                <div id="modal-category-badge" class="type-badge">Category</div>
+                <h2 id="modal-title">Opportunity Title</h2>
+                <div class="modal-meta">
+                    <span id="modal-source"><i class="fa-solid fa-globe"></i> Source</span>
+                    <span id="modal-date"><i class="fa-regular fa-calendar"></i> Date</span>
+                </div>
+            </div>
+            
+            <div class="modal-body" id="modal-body-content">
+                <!-- Raw HTML content gets injected here -->
+            </div>
+            
+            <div class="modal-footer">
+                <button id="modal-save-btn" class="btn btn-secondary">
+                    <i class="fa-regular fa-bookmark"></i>
+                    <span>Save</span>
+                </button>
+                <a id="modal-link-btn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                    <span>Apply / View Source</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <footer class="app-footer">
+        <p>© 2026 Global Opportunities Tracker. Powered by Python Flask, SQLite, Feed Parsing & Antigravity.</p>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

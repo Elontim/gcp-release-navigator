@@ -106,9 +106,25 @@
                 <div id="scraped-date-text" class="timestamp-indicator">Last updated: Never</div>
             </div>
 
-            <!-- Opportunities Grid -->
-            <div id="opportunities-container" class="opportunities-grid">
-                <!-- Skeleton loader placeholders dynamically injected on load -->
+            <!-- Opportunities Table View -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="opportunities-table" id="opportunities-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable active-sort" data-sort="title">Opportunity Title <i class="fa-solid fa-sort-down"></i></th>
+                                <th class="sortable" data-sort="category">Category <i class="fa-solid fa-sort"></i></th>
+                                <th class="sortable" data-sort="target_region">Target Region <i class="fa-solid fa-sort"></i></th>
+                                <th class="sortable" data-sort="deadline">Deadline <i class="fa-solid fa-sort"></i></th>
+                                <th>Key Benefits</th>
+                                <th style="width: 100px; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Table rows dynamically injected here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>

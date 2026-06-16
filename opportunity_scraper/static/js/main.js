@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let showSavedOnly = false;
     let isLoading = false;
     let searchTimeout = null;
+    let currentSortColumn = 'title';
+    let currentSortDirection = 'asc';
 
     // --- DOM Elements ---
     const searchBar = document.getElementById('search-bar');
@@ -13,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryTabs = document.querySelectorAll('.tab-item');
     const scrapeBtn = document.getElementById('scrape-trigger-btn');
     const btnSpinner = document.getElementById('btn-spinner');
-    const cardsContainer = document.getElementById('opportunities-container');
+    const tableBody = document.getElementById('table-body');
+    const sortHeaders = document.querySelectorAll('th.sortable');
     
     // Stats elements
     const countFellowships = document.getElementById('count-fellowships');
@@ -102,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isLoading = true;
         scrapeBtn.disabled = true;
         btnSpinner.classList.add('spinning');
-        showToast('Running background scraper... parsing RSS feeds.', 'info');
+        showToast('Running background scraper... parsing target websites.', 'info');
 
         try {
             const response = await fetch('/api/scrape', { method: 'POST' });
@@ -148,20 +151,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnElement.classList.remove('saved');
                 btnElement.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
                 showToast('Removed from bookmarks.', 'info');
-                
-                // If we are on the "Saved" tab, remove card immediately
-                if (showSavedOnly) {
-                    const card = btnElement.closest('.op-card');
-                    if (card) {
-                        card.style.opacity = '0';
-                        card.style.transform = 'scale(0.95)';
-                        setTimeout(() => {
-                            fetchOpportunities();
-                        }, 300);
+            }
+            
+            // Toggle row styling
+            const row = btnElement.closest('.op-row');
+            if (row) {
+                if (data.saved) {
+                    row.classList.add('row-saved');
+                } else {
+                    row.classList.remove('row-saved');
+                    if (showSavedOnly) {
+                        row.style.opacity = '0';
+                        setTimeout(() => fetchOpportunities(), 300);
                     }
                 }
             }
-            
+
             fetchStats();
         } catch (error) {
             console.error('Error saving opportunity:', error);
@@ -179,33 +184,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderSkeletons() {
-        cardsContainer.innerHTML = '';
-        for (let i = 0; i < 6; i++) {
-            const div = document.createElement('div');
-            div.className = 'skeleton-card';
-            div.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="skeleton-text skeleton-shimmer" style="width: 25%; height: 16px; border-radius: 6px;"></div>
-                    <div class="skeleton-text skeleton-shimmer" style="width: 20%; height: 10px;"></div>
-                </div>
-                <div class="skeleton-text skeleton-shimmer" style="width: 60%; height: 18px; margin-top: 4px;"></div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div class="skeleton-text skeleton-shimmer" style="width: 100%;"></div>
-                    <div class="skeleton-text skeleton-shimmer" style="width: 100%;"></div>
-                    <div class="skeleton-text skeleton-shimmer" style="width: 70%;"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px;">
-                    <div class="skeleton-text skeleton-shimmer" style="width: 25%; height: 14px;"></div>
-                    <div class="skeleton-text skeleton-shimmer" style="width: 10%; height: 16px; border-radius: 50%;"></div>
-                </div>
+        tableBody.innerHTML = '';
+        for (let i = 0; i < 5; i++) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td colspan="6">
+                    <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 0;">
+                        <div class="skeleton-text skeleton-shimmer" style="width: 45%; height: 16px;"></div>
+                        <div class="skeleton-text skeleton-shimmer" style="width: 25%; height: 10px;"></div>
+                    </div>
+                </td>
             `;
-            cardsContainer.appendChild(div);
+            tableBody.appendChild(tr);
         }
     }
 
-    // --- Rendering UI Cards ---
+    // --- Rendering Table Rows ---
     function renderOpportunities(opportunities) {
-        cardsContainer.innerHTML = '';
+        tableBody.innerHTML = '';
         resultsMetaText.textContent = `Found ${opportunities.length} opportunity${opportunities.length !== 1 ? 'ies' : ''}`;
         
         if (opportunities.length === 0) {
@@ -213,95 +209,103 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Apply client side sorting
+        sortOpportunitiesData(opportunities);
+
         opportunities.forEach(op => {
-            const card = createOpportunityCard(op);
-            cardsContainer.appendChild(card);
+            const row = createOpportunityRow(op);
+            tableBody.appendChild(row);
         });
     }
 
-    function createOpportunityCard(op) {
-        const card = document.createElement('article');
+    function sortOpportunitiesData(opportunities) {
+        opportunities.sort((a, b) => {
+            let valA = a[currentSortColumn] || '';
+            let valB = b[currentSortColumn] || '';
+            
+            if (typeof valA === 'string') {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+            
+            if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    function createOpportunityRow(op) {
+        const tr = document.createElement('tr');
         
-        // Dynamic category class naming
         let catClass = 'cat-default';
         if (op.category === 'Fellowship') catClass = 'cat-fellowship';
         if (op.category === 'Travel Grant') catClass = 'cat-grant';
         if (op.category === 'Fully Funded Conference') catClass = 'cat-conference';
         
-        card.className = `op-card ${catClass}`;
+        tr.className = `op-row ${op.saved ? 'row-saved' : ''}`;
         
         const formattedDate = formatDate(op.pub_date);
         const savedIcon = op.saved ? 'fa-solid fa-bookmark saved' : 'fa-regular fa-bookmark';
-        const cleanDesc = cleanHtmlText(op.description);
         
-        card.innerHTML = `
-            <div class="op-card-header">
-                <div class="op-card-meta">
-                    <span class="op-source">${escapeHtml(op.source)}</span>
-                    <span class="op-date">${formattedDate}</span>
+        tr.innerHTML = `
+            <td>
+                <div class="op-title-cell" style="cursor: pointer; font-weight: 700;">
+                    <span class="service-bullet ${catClass}"></span>
+                    <span class="table-op-title">${escapeHtml(op.title)}</span>
                 </div>
-                <h3 class="op-title" title="${escapeHtml(op.title)}">${escapeHtml(op.title)}</h3>
-            </div>
-            <div class="op-card-body">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                    <span class="type-badge">${op.category}</span>
-                    <span style="font-size: 0.72rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem;">
-                        <i class="fa-solid fa-hourglass-end"></i> ${escapeHtml(op.deadline || 'See details')}
-                    </span>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-left: 14px; margin-top: 2px;">
+                    Source: ${escapeHtml(op.source)} | Published: ${formattedDate}
                 </div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.35rem;">
-                    <i class="fa-solid fa-map-location-dot"></i> <span>Region: <strong>${escapeHtml(op.target_region || 'Global')}</strong></span>
+            </td>
+            <td><span class="type-badge ${catClass}">${op.category}</span></td>
+            <td><span class="region-text"><i class="fa-solid fa-map-location-dot" style="font-size: 0.75rem; margin-right: 4px; color: var(--text-muted);"></i>${escapeHtml(op.target_region || 'Global')}</span></td>
+            <td><span class="deadline-text"><i class="fa-solid fa-hourglass-end" style="font-size: 0.75rem; margin-right: 4px; color: var(--text-muted);"></i>${escapeHtml(op.deadline || 'See details')}</span></td>
+            <td><div class="benefits-summary-cell" title="${escapeHtml(op.benefits)}">${escapeHtml(op.benefits || 'Funding available')}</div></td>
+            <td style="text-align: center;">
+                <div style="display: flex; justify-content: center; gap: 0.5rem; align-items: center;">
+                    <button class="btn-save-op table-action-btn ${op.saved ? 'saved' : ''}" title="Bookmark opportunity">
+                        <i class="${savedIcon}"></i>
+                    </button>
+                    <a href="${op.link}" target="_blank" rel="noopener noreferrer" class="btn-link table-action-link" title="Open source details">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
                 </div>
-                <p class="op-desc">${escapeHtml(cleanDesc)}</p>
-            </div>
-            <div class="op-card-actions">
-                <button class="btn-read-op">
-                    <span>View Details</span>
-                    <i class="fa-solid fa-arrow-right-long"></i>
-                </button>
-                <button class="btn-save-op ${op.saved ? 'saved' : ''}" title="Bookmark this opportunity">
-                    <i class="${savedIcon}"></i>
-                </button>
-            </div>
+            </td>
         `;
 
+        // Event: Click title to open modal
+        tr.querySelector('.op-title-cell').addEventListener('click', () => {
+            openDetailsModal(op);
+        });
+
         // Event: Save button click
-        const saveBtn = card.querySelector('.btn-save-op');
+        const saveBtn = tr.querySelector('.btn-save-op');
         saveBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleSave(op.id, saveBtn);
         });
 
-        // Event: Open detailed view
-        const readBtn = card.querySelector('.btn-read-op');
-        readBtn.addEventListener('click', () => {
-            openDetailsModal(op);
-        });
-
-        return card;
+        return tr;
     }
 
     function renderEmptyState() {
-        const div = document.createElement('div');
-        div.className = 'empty-state';
-        
-        let msg = "We couldn't find any opportunities matching your filters.";
-        if (showSavedOnly) {
-            msg = "You haven't bookmarked any opportunities yet. Click the bookmark icon on cards to save them.";
-        }
-        
-        div.innerHTML = `
-            <div class="empty-icon">
-                <i class="fa-solid fa-earth-africa"></i>
-            </div>
-            <h3>No Opportunities Available</h3>
-            <p>${msg}</p>
-            ${!showSavedOnly ? '<button class="btn btn-secondary" id="empty-reset-btn">Reset Filters</button>' : ''}
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td colspan="6">
+                <div class="empty-state" style="border: none; background: none; padding: 3rem 0;">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-earth-africa"></i>
+                    </div>
+                    <h3>No Opportunities Available</h3>
+                    <p>We couldn't find any opportunities matching your filters.</p>
+                    ${!showSavedOnly ? '<button class="btn btn-secondary" id="empty-reset-btn" style="margin-top: 1rem;">Reset Filters</button>' : ''}
+                </div>
+            </td>
         `;
-        cardsContainer.appendChild(div);
+        tableBody.appendChild(tr);
 
         if (!showSavedOnly) {
-            document.getElementById('empty-reset-btn').addEventListener('click', () => {
+            tr.querySelector('#empty-reset-btn').addEventListener('click', () => {
                 searchBar.value = '';
                 clearSearchBtn.style.display = 'none';
                 activeCategory = '';
@@ -355,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const syncOp = opportunitiesList.find(o => o.id === op.id);
             if (syncOp) {
                 updateModalSaveBtnState(syncOp.saved, newSaveBtn);
-                // Also update the dashboard card list item if it exists
+                // Also update the dashboard table row
                 fetchOpportunities();
             }
         });
@@ -397,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Toggle light/dark themes
     function toggleTheme() {
         if (document.body.classList.contains('dark-mode')) {
             document.body.classList.remove('dark-mode');
@@ -452,6 +457,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 fetchOpportunities();
+            });
+        });
+
+        // Sortable headers click listeners
+        sortHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.getAttribute('data-sort');
+                
+                // Remove active classes from all headers
+                sortHeaders.forEach(h => {
+                    h.classList.remove('active-sort');
+                    const icon = h.querySelector('i');
+                    if (icon) icon.className = 'fa-solid fa-sort';
+                });
+                
+                if (currentSortColumn === column) {
+                    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSortColumn = column;
+                    currentSortDirection = 'asc';
+                }
+                
+                header.classList.add('active-sort');
+                const icon = header.querySelector('i');
+                if (icon) {
+                    icon.className = currentSortDirection === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+                }
+                
+                renderOpportunities(opportunitiesList);
             });
         });
 
@@ -526,6 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Format datetime string
     function formatDateTime(dateTimeString) {
         if (!dateTimeString) return 'Unknown';
         try {
@@ -569,7 +604,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return doc.documentElement.textContent || txt;
     }
 
+    // Escape HTML for safety
     function escapeHtml(unsafe) {
+        if (!unsafe) return '';
         return unsafe
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")

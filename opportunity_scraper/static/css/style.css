@@ -518,69 +518,140 @@ body {
     color: var(--text-muted);
 }
 
-/* Opportunities Grid */
-.opportunities-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.25rem;
-}
-
-@media (max-width: 480px) {
-    .opportunities-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Card layout */
-.op-card {
+/* Table Layout styling */
+.table-card {
     background-color: var(--bg-card);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 1.25rem;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
-    position: relative;
     overflow: hidden;
-    animation: slide-up 0.4s ease-out;
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--transition-normal);
 }
 
-@keyframes slide-up {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.op-card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg), 0 10px 30px -10px var(--primary-glow);
-}
-
-/* Category indicator top line */
-.op-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+.table-responsive {
     width: 100%;
-    height: 4px;
+    overflow-x: auto;
+}
+
+.opportunities-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.opportunities-table th, 
+.opportunities-table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.opportunities-table th {
+    background-color: rgba(255, 255, 255, 0.02);
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    user-select: none;
+}
+
+.opportunities-table th.sortable {
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.opportunities-table th.sortable:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--primary);
+}
+
+.opportunities-table th.sortable i {
+    margin-left: 6px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.opportunities-table th.active-sort {
+    color: var(--primary);
+}
+
+.opportunities-table th.active-sort i {
+    color: var(--primary);
+}
+
+.op-row {
+    transition: background-color var(--transition-fast);
+    animation: fade-in-row 0.3s ease-out;
+}
+
+@keyframes fade-in-row {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.op-row:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.light-mode .op-row:hover {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+.op-row.row-saved {
+    background-color: rgba(244, 63, 94, 0.02);
+}
+
+/* Service Bullet indicators */
+.service-bullet {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
     background-color: var(--primary);
 }
+.service-bullet.cat-fellowship { background-color: var(--fellowship-color); }
+.service-bullet.cat-grant { background-color: var(--grant-color); }
+.service-bullet.cat-conference { background-color: var(--conference-color); }
 
-.op-card.cat-fellowship::before { background-color: var(--fellowship-color); }
-.op-card.cat-grant::before { background-color: var(--grant-color); }
-.op-card.cat-conference::before { background-color: var(--conference-color); }
+.table-op-title {
+    color: var(--text-primary);
+    transition: color var(--transition-fast);
+}
+
+.table-op-title:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.region-text, .deadline-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.benefits-summary-cell {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table-action-btn {
+    padding: 6px;
+    font-size: 0.95rem;
+}
+
+.table-action-link {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
 
 /* Card Header */
 .op-card-header {
